@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_HOST: "postgres"
+    ports:
+      - "5432:5432"
+
+  flyway:
+    image: flyway/flyway
+    command: "migrate"
+    volumes:
+      - ./migrations:/flyway/sql
+    environment:
+      FLYWAY_CREATE_SCHEMAS: "true"
+      FLYWAY_CONNECT_RETRIES_INTERVAL: 2
+      FLYWAY_CONNECT_RETRIES: 5
+      FLYWAY_PASSWORD: "postgres"
+      FLYWAY_USER: "postgres"
+      FLYWAY_SCHEMAS: "public"
+      FLYWAY_URL: "jdbc:postgresql://postgres:5432/postgres"
+      FLYWAY_BASELINE_ON_MIGRATE: "true"
+    depends_on:
+      - postgres
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+  price-generator:
+    image: kamieshi/price_generator:latest
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      COUNT_COMPANY: 5
+      COUNT_UPDATE_PER_SECOND: 1
+      ONLY_POSITIVE_INCREMENT: "true"
+    depends_on:
+      - redis
+
+  price-service:
+    image: kamieshi/price_service:latest
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RPC_POSITION_SERVICE_PORT: 5300
+    ports:
+      - "5300:5300"
+    depends_on:
+      - price-generator
+
+  position-service :
+    image: kamieshi/position_service:latest
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSITION_SERVICE_PORT_RPC: 5301
+      POSITION_SERVICE_HOST_RPC: 0.0.0.0
+      PRICE_SERVICE_PORT_RPC: 5300
+      PRICE_SERVICE_HOST_RPC: price-service
+    depends_on:
+      - price-service
+    ports:
+      - "5301:5301"
+
+  position-client :
+    image: kamieshi/position_client:latest
+    environment:
+      POSITION_SERVER_RPC_HOST: position-service
+      POSITION_SERVER_RPC_PORT: 5301
+      PRICE_SERVER_RPC_HOST:  price-service
+      PRICE_SERVER_RPC_PORT: 5300
+      HTTP_ECHO_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - position-service
+      - price-service
