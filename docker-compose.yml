@@ -12,10 +12,8 @@ services:
       - "5432:5432"
 
   flyway:
-    image: flyway/flyway
+    image: kamieshi/position_service_migrations:latest
     command: "migrate"
-    volumes:
-      - ./migrations:/flyway/sql
     environment:
       FLYWAY_CREATE_SCHEMAS: "true"
       FLYWAY_CONNECT_RETRIES_INTERVAL: 2
@@ -55,7 +53,7 @@ services:
     depends_on:
       - price-generator
 
-  position-service :
+  position-service:
     image: kamieshi/position_service:latest
     environment:
       POSTGRES_PASSWORD: postgres
@@ -72,12 +70,12 @@ services:
     ports:
       - "5301:5301"
 
-  position-client :
+  position-client:
     image: kamieshi/position_client:latest
     environment:
       POSITION_SERVER_RPC_HOST: position-service
       POSITION_SERVER_RPC_PORT: 5301
-      PRICE_SERVER_RPC_HOST:  price-service
+      PRICE_SERVER_RPC_HOST: price-service
       PRICE_SERVER_RPC_PORT: 5300
       HTTP_ECHO_PORT: 8080
     ports:

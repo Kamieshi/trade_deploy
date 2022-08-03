@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  labels:
+    redis-group : redis
+spec:
+  selector:
+    redis-group : redis
+  ports:
+    - port: 6379
+      name: redis
+      targetPort: 6379
+      protocol: TCP

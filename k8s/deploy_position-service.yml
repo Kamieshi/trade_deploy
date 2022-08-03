@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: position-deployment
+  labels:
+    app: position-app
+spec:
+  selector:
+    matchLabels:
+      app: position-app
+      position-group: position
+      price-service-group : price
+      pg-group: postgres
+  template:
+    metadata:
+      labels:
+        app: position-app
+        position-group: position
+        price-service-group : price
+        pg-group: postgres
+    spec:
+      containers:
+        - name: position-app
+          image: kamieshi/position_service:latest
+          env:
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: postgres
+            - name: POSTGRES_HOST
+              value: postgres-service
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSITION_SERVICE_PORT_RPC
+              value: "5301"
+            - name: POSITION_SERVICE_HOST_RPC
+              value: 0.0.0.0
+            - name: PRICE_SERVICE_PORT_RPC
+              value: "5300"
+            - name: PRICE_SERVICE_HOST_RPC
+              value: price-service
+          ports:
+            - containerPort: 5301

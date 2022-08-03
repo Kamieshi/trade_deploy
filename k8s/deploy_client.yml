@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: client-deployment
+  labels:
+    app: client-app
+spec:
+  selector:
+    matchLabels:
+      app: client-app
+      client-group: client
+      position-group : position
+      price-service-group : price
+  template:
+    metadata:
+      labels:
+        app: client-app
+        client-group: client
+        position-group : position
+        price-service-group: price
+    spec:
+      containers:
+        - name: client
+          image: kamieshi/position_client:latest
+          env:
+            - name: POSITION_SERVER_RPC_HOST
+              value: position-service
+            - name: POSITION_SERVER_RPC_PORT
+              value: "5301"
+            - name: PRICE_SERVER_RPC_HOST
+              value: price-service
+            - name: PRICE_SERVER_RPC_PORT
+              value: "5300"
+            - name: HTTP_ECHO_PORT
+              value: "8080"

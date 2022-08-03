@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: price-service-deployment
+  labels:
+    app: price-app
+spec:
+  selector:
+    matchLabels:
+      app: price-app
+      redis-group: redis
+      price-service-group : price
+  template:
+    metadata:
+      labels:
+        app: price-app
+        redis-group: redis
+        price-service-group : price
+    spec:
+      containers:
+        - name: price-app
+          image: kamieshi/price_service:latest
+          env:
+            - name: REDIS_HOST
+              value: redis-service
+            - name: REDIS_PORT
+              value: "6379"
+            - name: RPC_POSITION_SERVICE_PORT
+              value: "5300"
+          ports:
+            - containerPort: 5300

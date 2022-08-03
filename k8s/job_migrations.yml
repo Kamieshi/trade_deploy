@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migration-job
+  labels:
+    app: migration-app
+spec:
+  template:
+    metadata:
+      labels:
+        app: migration-app
+        pg-group: postgres
+    spec:
+      containers:
+        - name: flyway
+          image: flyway/flyway
+          command: [ "flyway","migrate", ]
+          env:
+            - name: FLYWAY_CREATE_SCHEMAS
+              value: "true"
+            - name: FLYWAY_CONNECT_RETRIES_INTERVAL
+              value: "2"
+            - name: FLYWAY_CONNECT_RETRIES
+              value: "5"
+            - name: FLYWAY_PASSWORD
+              value: "postgres"
+            - name: FLYWAY_USER
+              value: "postgres"
+            - name: FLYWAY_SCHEMAS
+              value: "public"
+            - name: FLYWAY_URL
+              value: "jdbc:postgresql://postgres-service:5432/postgres"
+            - name: FLYWAY_BASELINE_ON_MIGRATE
+              value: "true"
+          volumeMounts:
+            - mountPath: /flyway/sql
+              name: sql
+      volumes:
+        - name: sql
+          hostPath:
+            path: "/trade/migrations"
+      restartPolicy: Never
+  backoffLimit: 1

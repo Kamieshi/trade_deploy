@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: price-service
+  labels:
+    price-service-group : price
+spec:
+  selector:
+    price-service-group : price
+  ports:
+    - port: 5300
+      name: price-app
+      targetPort: 5300
+      protocol: TCP

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: price-generator-deployment
+  labels:
+    app: price-generator-app
+spec:
+  selector:
+    matchLabels:
+      app: price-generator-app
+      redis-group: redis
+  template:
+    metadata:
+      labels:
+        app: price-generator-app
+        redis-group: redis
+    spec:
+      containers:
+        - name: price-generator-app
+          image: kamieshi/price_generator:latest
+          env:
+            - name: REDIS_HOST
+              value: redis-service
+            - name: REDIS_PORT
+              value: "6379"
+            - name: COUNT_COMPANY
+              value: "5"
+            - name: COUNT_UPDATE_PER_SECOND
+              value: "1"
+            - name: ONLY_POSITIVE_INCREMENT
+              value: "true"
